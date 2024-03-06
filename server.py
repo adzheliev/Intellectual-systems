@@ -1,6 +1,8 @@
 import asyncio
 import datetime
 import random
+import logging
+
 
 
 class TCPServer:
@@ -9,7 +11,7 @@ class TCPServer:
         self.port = port
         self.client_counter = 0
         self.message_counter = 0
-        self.clients = {}  # client_id: transport
+        self.clients = {}
 
     async def handle_client(self, reader, writer):
         client_id = self.client_counter = self.client_counter + 1
@@ -31,12 +33,17 @@ class TCPServer:
                         self.message_counter += 1
                         now = datetime.datetime.now()
                         log_message += f"{now.strftime('%H:%M:%S.%f')[:-3]};{response}"
-                    print(log_message)  # Вместо печати, записываем в файл
+                    logging.info(log_message)
                 else:
                     break
+        except Exception as e:
+            logging.error(f"Ошибка при обработке клиента {client_id}: {e}")
         finally:
+            if client_id in self.clients:  # Проверяем наличие client_id перед удалением
+                del self.clients[client_id]
+                logging.info(f"Соединение с клиентом {client_id} закрыто.")
             writer.close()
-            del self.clients[client_id]
+            await writer.wait_closed()
 
     async def send_keepalive(self):
         while True:
@@ -49,10 +56,21 @@ class TCPServer:
 
     async def run(self):
         server = await asyncio.start_server(self.handle_client, self.host, self.port)
-        async with server:
-            await asyncio.gather(server.serve_forever(), self.send_keepalive())
+        server_task = asyncio.create_task(server.serve_forever())
+        try:
+            await asyncio.sleep(10)  # Run for 5 minutes
+        finally:
+            server_task.cancel()
+            writers = list(self.clients.values())
+            for writer in writers:
+                writer.close()
+                await writer.wait_closed()
+            server.close()
+            await server.wait_closed()
+            logging.info("Server shutdown cleanly.")
 
 
 if __name__ == "__main__":
-    server = TCPServer(host='127.0.0.1', port=8888)
+    logging.basicConfig(level=logging.INFO)
+    server = TCPServer('localhost', 8888)
     asyncio.run(server.run())
