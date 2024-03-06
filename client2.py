@@ -5,7 +5,20 @@ import logging
 
 
 class TCPClient:
+    """
+    A simple TCP client that sends periodic pings to a server and logs
+    any responses it receives.
+    """
+
     def __init__(self, host, port, client_id):
+        """
+        Initialize the client with the specified host, port, and client ID.
+
+        Args:
+            host (str): The hostname or IP address of the server.
+            port (int): The port number of the server.
+            client_id (int): The unique ID of this client.
+        """
         self.host = host
         self.port = port
         self.client_id = client_id
@@ -14,6 +27,13 @@ class TCPClient:
         self.message = None
 
     async def send_ping(self, writer):
+        """
+        Send a ping to the server and log any responses.
+
+        Args:
+            writer (asyncio.StreamWriter): The writer for the active connection
+                to the server.
+        """
         while True:
             try:
                 self.message = f"[{self.request_counter}] PING\n"
@@ -26,12 +46,19 @@ class TCPClient:
                 break
             except Exception as e:
                 logging.info(
-                    f"Клиент {self.client_id}. "
-                    f"Ошибка при отправке сообщения: {e}"
+                    f"Client {self.client_id}. "
+                    f"Error sending message: {e}"
                 )
                 break
 
     async def handle_response(self, reader):
+        """
+        Read a response from the server and log it.
+
+        Args:
+            reader (asyncio.StreamReader): The reader for the active connection
+                to the server.
+        """
         while True:
             response = await reader.readline()
             response_time = datetime.datetime.now()
@@ -54,9 +81,11 @@ class TCPClient:
                 break
 
             logging.info(log_message)
-            file_logger.info(log_message)
 
     async def run(self):
+        """
+        Start the client and wait for the specified duration.
+        """
         writer = None
         try:
             reader, writer = await asyncio.open_connection(
@@ -70,7 +99,7 @@ class TCPClient:
             receive_task.cancel()
             await asyncio.gather(send_ping_task, receive_task)
         except Exception as e:
-            logging.error(f"Клиент {self.client_id} ошибка: {e}")
+            logging.error(f"Client {self.client_id} error: {e}")
         finally:
             if writer and not writer.is_closing():
                 writer.close()
@@ -79,10 +108,10 @@ class TCPClient:
                     await writer.wait_closed()
                 except Exception as e:
                     logging.info(
-                        f"Клиент {self.client_id}. "
-                        f"Ошибка при закрытии соединения: {e}"
+                        f"Client {self.client_id}. "
+                        f"Error closing connection: {e}"
                     )
-            logging.info(f"Клиент {self.client_id} завершил работу.")
+            logging.info(f"Client {self.client_id} finished.")
 
 
 if __name__ == "__main__":

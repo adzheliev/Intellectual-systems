@@ -5,7 +5,25 @@ import logging
 
 
 class TCPServer:
+    """
+    A simple TCP server that echoes back any incoming data.
+
+    Attributes:
+        host (str): The hostname or IP address to bind to.
+        port (int): The port to listen on.
+        client_counter (int): A counter for tracking the number of connected clients.
+        message_counter (int): A counter for tracking the number of messages sent.
+        clients (dict): A dictionary of connected clients, keyed by their client ID.
+    """
+
     def __init__(self, host, port):
+        """
+        Initialize a new TCP server.
+
+        Args:
+            host (str): The hostname or IP address to bind to.
+            port (int): The port to listen on.
+        """
         self.host = host
         self.port = port
         self.client_counter = 0
@@ -13,6 +31,13 @@ class TCPServer:
         self.clients = {}
 
     async def handle_client(self, reader, writer):
+        """
+        A coroutine that handles incoming connections from clients.
+
+        Args:
+            reader (StreamReader): A asyncio stream reader for reading incoming data.
+            writer (StreamWriter): A asyncio stream writer for writing outgoing data.
+        """
         client_id = self.client_counter = self.client_counter + 1
         self.clients[client_id] = writer
         try:
@@ -57,6 +82,9 @@ class TCPServer:
             await writer.wait_closed()
 
     async def send_keepalive(self):
+        """
+        A coroutine that sends a keepalive message to all connected clients every 5 seconds.
+        """
         while True:
             await asyncio.sleep(5)
             message = f"[{self.message_counter}] keepalive\n"
@@ -69,6 +97,9 @@ class TCPServer:
             self.message_counter += 1
 
     async def run(self):
+        """
+        A coroutine that starts the server and waits for incoming connections.
+        """
         server = await asyncio.start_server(
             self.handle_client,
             self.host,
