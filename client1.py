@@ -10,17 +10,17 @@ class TCPClient:
         self.port = port
         self.client_id = client_id
         self.request_counter = 0
+        self.send_time = None
+        self.message = None
 
     async def send_ping(self, writer):
         while True:
             try:
-                message = f"[{self.request_counter}] PING\n"
-                now = datetime.datetime.now()
-                log_message = f"{message.strip()}"
-                writer.write(message.encode())
+                self.message = f"[{self.request_counter}] PING\n"
+                self.send_time = datetime.datetime.now()
+                writer.write(self.message.encode())
                 await writer.drain()
                 self.request_counter += 1
-                logging.info(log_message)
                 await asyncio.sleep(random.randint(300, 3000) / 1000)
             except asyncio.CancelledError:
                 break
@@ -28,14 +28,32 @@ class TCPClient:
                 logging.info(f"Клиент {self.client_id}. Ошибка при отправке сообщения: {e}")
                 break
 
+    async def handle_response(self, reader):
+        while True:
+            response = await reader.readline()
+            response_time = datetime.datetime.now()
+            if response:
+                response_message = response.decode().strip()
+                if "keepalive" in response_message:
+                    log_message = f"{datetime.datetime.now().strftime('%Y-%m-%d')};{response_time.strftime('%H:%M:%S.%f')};(keepalive)"
+                else:
+                    log_message = f"{self.send_time.strftime('%Y-%m-%d;%H:%M:%S.%f')};{self.message.rstrip()};{response_time.strftime('%H:%M:%S.%f')};{response_message}"
+            else:
+                break
+
+            logging.info(log_message)
+            file_logger.info(log_message)
+
     async def run(self):
         writer = None
         try:
             reader, writer = await asyncio.open_connection(self.host, self.port)
             send_ping_task = asyncio.create_task(self.send_ping(writer))
-            await asyncio.sleep(20)
+            receive_task = asyncio.create_task(self.handle_response(reader))
+            await asyncio.sleep(300)
             send_ping_task.cancel()
-            await send_ping_task
+            receive_task.cancel()
+            await asyncio.gather(send_ping_task, receive_task)
         except Exception as e:
             logging.error(f"Клиент {self.client_id} ошибка: {e}")
         finally:

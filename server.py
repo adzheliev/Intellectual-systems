@@ -22,16 +22,16 @@ class TCPServer:
                 if data:
                     message = data.decode()
                     if random.random() < 0.1:
-                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message};(проигнорировано)"
+                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message.rstrip()};(проигнорировано)"
                     else:
                         await asyncio.sleep(random.randint(100, 1000) / 1000)
-                        response = f"[{self.message_counter}]/{message.split()[0]} PONG ({client_id})"
+                        response = f"[{self.message_counter}]/{message.split()[0]} PONG ({client_id})\n"
                         response_time = datetime.datetime.now()
                         writer.write(response.encode())
                         await writer.drain()
                         self.message_counter += 1
-                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message};{response_time.strftime('%H:%M:%S.%f')[:-3]};{response}"
-                    logging.info(response)
+                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message.rstrip()};{response_time.strftime('%H:%M:%S.%f')[:-3]};{response.rstrip()}"
+                    logging.info(log_message)
                     file_logger.info(log_message)
                 else:
                     break
@@ -47,9 +47,7 @@ class TCPServer:
     async def send_keepalive(self):
         while True:
             await asyncio.sleep(5)
-            message = f"[{self.message_counter}] keepalive"
-            logging.info(message)
-            file_logger.info(message)
+            message = f"[{self.message_counter}] keepalive\n"
             for writer in self.clients.values():
                 try:
                     writer.write(message.encode())
@@ -63,7 +61,7 @@ class TCPServer:
         server_task = asyncio.create_task(server.serve_forever())
         keepalive_task = asyncio.create_task(self.send_keepalive())
         try:
-            await asyncio.sleep(20)  # Run for 5 minutes
+            await asyncio.sleep(300)
         finally:
             keepalive_task.cancel()
             try:
