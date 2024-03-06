@@ -43,7 +43,7 @@ class TCPClient:
         try:
             reader, writer = await asyncio.open_connection(self.host, self.port)
             send_ping_task = asyncio.create_task(self.send_ping(writer))
-            await asyncio.sleep(10)  # Operational period
+            await asyncio.sleep(20)  # Operational period
             send_ping_task.cancel()
             await send_ping_task
         except Exception as e:

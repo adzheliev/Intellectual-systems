@@ -4,7 +4,6 @@ import random
 import logging
 
 
-
 class TCPServer:
     def __init__(self, host, port):
         self.host = host
@@ -47,19 +46,28 @@ class TCPServer:
 
     async def send_keepalive(self):
         while True:
-            await asyncio.sleep(5)
-            for client_id, writer in self.clients.items():
-                response = f"[{self.message_counter}] keepalive\n"
-                writer.write(response.encode())
-                await writer.drain()
-                self.message_counter += 1
+            await asyncio.sleep(5)  # Wait for 5 seconds between keepalive messages
+            message = f"[{self.message_counter}] keepalive\n"
+            for writer in self.clients.values():
+                try:
+                    writer.write(message.encode())
+                    await writer.drain()
+                except Exception as e:
+                    logging.error(f"Error sending keepalive: {e}")
+            self.message_counter += 1
 
     async def run(self):
         server = await asyncio.start_server(self.handle_client, self.host, self.port)
         server_task = asyncio.create_task(server.serve_forever())
+        keepalive_task = asyncio.create_task(self.send_keepalive())
         try:
-            await asyncio.sleep(10)  # Run for 5 minutes
+            await asyncio.sleep(20)  # Run for 5 minutes
         finally:
+            keepalive_task.cancel()
+            try:
+                await keepalive_task
+            except asyncio.CancelledError:
+                pass
             server_task.cancel()
             writers = list(self.clients.values())
             for writer in writers:
