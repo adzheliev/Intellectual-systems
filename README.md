@@ -9,7 +9,7 @@ This project demonstrates a client-server architecture using Python's asyncio fo
 
 ## Setup
 To run the server and clients:
-1. Clone the repository `https://github.com/adzheliev/Intellectual-systems.git`
+1. Clone the repository `git clone https://github.com/adzheliev/Intellectual-systems.git`
 2. Build Docker images: `docker-compose build`
 3. Start services: `docker-compose up`
 
