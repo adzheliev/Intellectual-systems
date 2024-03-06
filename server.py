@@ -2,6 +2,8 @@ import asyncio
 import datetime
 import random
 import logging
+from typing import Dict
+from asyncio import StreamReader, StreamWriter
 
 
 class TCPServer:
@@ -16,7 +18,7 @@ class TCPServer:
         clients (dict): A dictionary of connected clients, keyed by their client ID.
     """
 
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int) -> None:
         """
         Initialize a new TCP server.
 
@@ -24,13 +26,13 @@ class TCPServer:
             host (str): The hostname or IP address to bind to.
             port (int): The port to listen on.
         """
-        self.host = host
-        self.port = port
-        self.client_counter = 0
-        self.message_counter = 0
-        self.clients = {}
+        self.host: str = host
+        self.port: int = port
+        self.client_counter: int = 0
+        self.message_counter: int = 0
+        self.clients: Dict[int, StreamWriter] = {}
 
-    async def handle_client(self, reader, writer):
+    async def handle_client(self, reader: StreamReader, writer: StreamWriter) -> None:
         """
         A coroutine that handles incoming connections from clients.
 
@@ -81,7 +83,7 @@ class TCPServer:
             writer.close()
             await writer.wait_closed()
 
-    async def send_keepalive(self):
+    async def send_keepalive(self) -> None:
         """
         A coroutine that sends a keepalive message to all connected clients every 5 seconds.
         """
@@ -96,7 +98,7 @@ class TCPServer:
                     logging.error(f"Ошибка отправки keepalive: {e}")
             self.message_counter += 1
 
-    async def run(self):
+    async def run(self) -> None:
         """
         A coroutine that starts the server and waits for incoming connections.
         """

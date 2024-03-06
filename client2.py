@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import random
 import logging
+from asyncio import StreamReader, StreamWriter
 
 
 class TCPClient:
@@ -10,7 +11,7 @@ class TCPClient:
     any responses it receives.
     """
 
-    def __init__(self, host, port, client_id):
+    def __init__(self, host: str, port: int, client_id: int) -> None:
         """
         Initialize the client with the specified host, port, and client ID.
 
@@ -19,14 +20,14 @@ class TCPClient:
             port (int): The port number of the server.
             client_id (int): The unique ID of this client.
         """
-        self.host = host
-        self.port = port
-        self.client_id = client_id
-        self.request_counter = 0
+        self.host: str = host
+        self.port: int = port
+        self.client_id: int = client_id
+        self.request_counter: int = 0
         self.send_time = None
         self.message = None
 
-    async def send_ping(self, writer):
+    async def send_ping(self, writer: StreamWriter) -> None:
         """
         Send a ping to the server and log any responses.
 
@@ -51,7 +52,7 @@ class TCPClient:
                 )
                 break
 
-    async def handle_response(self, reader):
+    async def handle_response(self, reader: StreamReader) -> None:
         """
         Read a response from the server and log it.
 
@@ -82,7 +83,7 @@ class TCPClient:
 
             logging.info(log_message)
 
-    async def run(self):
+    async def run(self) -> None:
         """
         Start the client and wait for the specified duration.
         """
