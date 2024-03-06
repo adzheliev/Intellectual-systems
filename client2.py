@@ -60,6 +60,6 @@ class TCPClient:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
     client = TCPClient('localhost', 8888, 2)
     asyncio.run(client.run())

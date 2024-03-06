@@ -79,6 +79,6 @@ class TCPServer:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
     server = TCPServer('localhost', 8888)
     asyncio.run(server.run())
