@@ -18,18 +18,21 @@ class TCPServer:
         try:
             while True:
                 data = await reader.readline()
+                request_time = datetime.datetime.now()
                 if data:
                     message = data.decode()
                     if random.random() < 0.1:
-                        pass
+                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message};(проигнорировано)"
                     else:
                         await asyncio.sleep(random.randint(100, 1000) / 1000)
                         response = f"[{self.message_counter}]/{message.split()[0]} PONG ({client_id})"
+                        response_time = datetime.datetime.now()
                         writer.write(response.encode())
                         await writer.drain()
                         self.message_counter += 1
-                        now = datetime.datetime.now()
+                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message};{response_time.strftime('%H:%M:%S.%f')[:-3]};{response}"
                     logging.info(response)
+                    file_logger.info(log_message)
                 else:
                     break
         except Exception as e:
@@ -52,7 +55,7 @@ class TCPServer:
                     writer.write(message.encode())
                     await writer.drain()
                 except Exception as e:
-                    logging.error(f"Error sending keepalive: {e}")
+                    logging.error(f"Ошибка отправки keepalive: {e}")
             self.message_counter += 1
 
     async def run(self):
@@ -74,14 +77,14 @@ class TCPServer:
                 await writer.wait_closed()
             server.close()
             await server.wait_closed()
-            logging.info("Server shutdown cleanly.")
+            logging.info("Время работы сервера истекло.")
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     file_logger = logging.getLogger('fileLogger')
     file_logger.setLevel(logging.INFO)
-    file_handler = logging.FileHandler('server.log')
+    file_handler = logging.FileHandler('logs/server.log')
     file_handler.setLevel(logging.INFO)
     file_formatter = logging.Formatter('%(message)s')
     file_handler.setFormatter(file_formatter)

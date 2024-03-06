@@ -25,7 +25,7 @@ class TCPClient:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logging.info(f"Client {self.client_id} encountered an error while sending ping: {e}")
+                logging.info(f"Клиент {self.client_id}. Ошибка при отправке сообщения: {e}")
                 break
 
     async def run(self):
@@ -37,7 +37,7 @@ class TCPClient:
             send_ping_task.cancel()
             await send_ping_task
         except Exception as e:
-            logging.error(f"Client {self.client_id} error: {e}")
+            logging.error(f"Клиент {self.client_id} ошибка: {e}")
         finally:
             if writer and not writer.is_closing():
                 writer.close()
@@ -45,15 +45,15 @@ class TCPClient:
                 try:
                     await writer.wait_closed()
                 except Exception as e:
-                    logging.info(f"Client {self.client_id} closing connection encountered an error: {e}")
-            logging.info(f"Client {self.client_id} exited cleanly.")
+                    logging.info(f"Клиент {self.client_id}. Ошибка при закрытии соединения: {e}")
+            logging.info(f"Клиент {self.client_id} завершил работу.")
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     file_logger = logging.getLogger('fileLogger')
     file_logger.setLevel(logging.INFO)
-    file_handler = logging.FileHandler('client1.log')
+    file_handler = logging.FileHandler('logs/client1.log')
     file_handler.setLevel(logging.INFO)
     file_formatter = logging.Formatter('%(message)s')
     file_handler.setFormatter(file_formatter)
