@@ -24,7 +24,7 @@ class TCPServer:
                         pass
                     else:
                         await asyncio.sleep(random.randint(100, 1000) / 1000)
-                        response = f"[{self.message_counter}]/{message.split()[0]} PONG ({client_id})\n"
+                        response = f"[{self.message_counter}]/{message.split()[0]} PONG ({client_id})"
                         writer.write(response.encode())
                         await writer.drain()
                         self.message_counter += 1
@@ -44,8 +44,9 @@ class TCPServer:
     async def send_keepalive(self):
         while True:
             await asyncio.sleep(5)
-            message = f"[{self.message_counter}] keepalive\n"
+            message = f"[{self.message_counter}] keepalive"
             logging.info(message)
+            file_logger.info(message)
             for writer in self.clients.values():
                 try:
                     writer.write(message.encode())
@@ -78,5 +79,14 @@ class TCPServer:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')
+    file_logger = logging.getLogger('fileLogger')
+    file_logger.setLevel(logging.INFO)
+    file_handler = logging.FileHandler('server.log')
+    file_handler.setLevel(logging.INFO)
+    file_formatter = logging.Formatter('%(message)s')
+    file_handler.setFormatter(file_formatter)
+    file_logger.addHandler(file_handler)
+    file_logger.propagate = False
+
     server = TCPServer('localhost', 8888)
     asyncio.run(server.run())

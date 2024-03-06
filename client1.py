@@ -16,7 +16,7 @@ class TCPClient:
             try:
                 message = f"[{self.request_counter}] PING\n"
                 now = datetime.datetime.now()
-                log_message = f"Client {self.client_id} sent: {message.strip()}"
+                log_message = f"{message.strip()}"
                 writer.write(message.encode())
                 await writer.drain()
                 self.request_counter += 1
@@ -51,5 +51,14 @@ class TCPClient:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')
+    file_logger = logging.getLogger('fileLogger')
+    file_logger.setLevel(logging.INFO)
+    file_handler = logging.FileHandler('client1.log')
+    file_handler.setLevel(logging.INFO)
+    file_formatter = logging.Formatter('%(message)s')
+    file_handler.setFormatter(file_formatter)
+    file_logger.addHandler(file_handler)
+    file_logger.propagate = False
+
     client = TCPClient('localhost', 8888, 1)
     asyncio.run(client.run())
