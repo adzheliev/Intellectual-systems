@@ -4,14 +4,12 @@ import random
 import logging
 
 
-
 class TCPClient:
     def __init__(self, host, port, client_id):
         self.host = host
         self.port = port
         self.client_id = client_id
         self.request_counter = 0
-
 
     async def send_ping(self, writer):
         while True:
@@ -29,14 +27,6 @@ class TCPClient:
             except Exception as e:
                 logging.info(f"Client {self.client_id} encountered an error while sending ping: {e}")
                 break
-
-    async def receive_pong(self, reader):
-        while True:
-            data = await reader.readline()
-            if data:
-                message = data.decode().strip()
-                log_message = f"Client {self.client_id} received: {message}"
-                logging.info(log_message)
 
     async def run(self):
         writer = None

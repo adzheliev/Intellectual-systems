@@ -4,14 +4,12 @@ import random
 import logging
 
 
-
 class TCPClient:
     def __init__(self, host, port, client_id):
         self.host = host
         self.port = port
         self.client_id = client_id
         self.request_counter = 0
-
 
     async def send_ping(self, writer):
         while True:
@@ -30,20 +28,12 @@ class TCPClient:
                 logging.info(f"Client {self.client_id} encountered an error while sending ping: {e}")
                 break
 
-    async def receive_pong(self, reader):
-        while True:
-            data = await reader.readline()
-            if data:
-                message = data.decode().strip()
-                log_message = f"Client {self.client_id} received: {message}"
-                logging.info(log_message)
-
     async def run(self):
         writer = None
         try:
             reader, writer = await asyncio.open_connection(self.host, self.port)
             send_ping_task = asyncio.create_task(self.send_ping(writer))
-            await asyncio.sleep(20)  # Operational period
+            await asyncio.sleep(20)
             send_ping_task.cancel()
             await send_ping_task
         except Exception as e:

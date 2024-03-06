@@ -20,19 +20,16 @@ class TCPServer:
                 data = await reader.readline()
                 if data:
                     message = data.decode()
-                    now = datetime.datetime.now()
-                    log_message = f"{now.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message};"
-                    if random.random() < 0.1:  # 10% chance to ignore
-                        log_message += "(проигнорировано)"
+                    if random.random() < 0.1:
+                        pass
                     else:
                         await asyncio.sleep(random.randint(100, 1000) / 1000)
-                        response = f"[{self.message_counter}]{message.split()[0]} PONG ({client_id})\n"
+                        response = f"[{self.message_counter}]/{message.split()[0]} PONG ({client_id})\n"
                         writer.write(response.encode())
                         await writer.drain()
                         self.message_counter += 1
                         now = datetime.datetime.now()
-                        log_message += f"{now.strftime('%H:%M:%S.%f')[:-3]};{response}"
-                    logging.info(log_message)
+                    logging.info(response)
                 else:
                     break
         except Exception as e:
@@ -46,8 +43,9 @@ class TCPServer:
 
     async def send_keepalive(self):
         while True:
-            await asyncio.sleep(5)  # Wait for 5 seconds between keepalive messages
+            await asyncio.sleep(5)
             message = f"[{self.message_counter}] keepalive\n"
+            logging.info(message)
             for writer in self.clients.values():
                 try:
                     writer.write(message.encode())
