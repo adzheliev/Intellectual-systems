@@ -9,8 +9,9 @@ This project demonstrates a client-server architecture using Python's asyncio fo
 
 ## Setup
 To run the server and clients:
-1. Build Docker images: `docker-compose build`
-2. Start services: `docker-compose up`
+1. Clone the repository `https://github.com/adzheliev/Intellectual-systems.git`
+2. Build Docker images: `docker-compose build`
+3. Start services: `docker-compose up`
 
 ## Features
 - **Server:** Listens on TCP, processes "PING", responds with "PONG".
