@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  server:
+    build: .
+    command: python server.py
+    volumes:
+      - .:/app
+    ports:
+      - "8888:8888"
+
+  client1:
+    build: .
+    command: python client1.py
+    volumes:
+      - .:/app
+    depends_on:
+      - server
+
+  client2:
+    build: .
+    command: python client2.py
+    volumes:
+      - .:/app
+    depends_on:
+      - server

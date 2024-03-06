@@ -89,5 +89,5 @@ if __name__ == "__main__":
     file_logger.addHandler(file_handler)
     file_logger.propagate = False
 
-    server = TCPServer('localhost', 8888)
+    server = TCPServer('0.0.0.0', 8888)
     asyncio.run(server.run())

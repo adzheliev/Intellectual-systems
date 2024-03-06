@@ -78,5 +78,5 @@ if __name__ == "__main__":
     file_logger.addHandler(file_handler)
     file_logger.propagate = False
 
-    client = TCPClient('localhost', 8888, 1)
+    client = TCPClient('server', 8888, 1)
     asyncio.run(client.run())
