@@ -16,7 +16,7 @@ To run the server and clients:
 ## Features
 - **Server:** Listens on TCP, processes "PING", responds with "PONG".
 - **Clients:** Send periodic "PING" messages.
-- **Logging:** Activities are logged for monitoring purposes.
+- **Logging:** Activities are logged for monitoring purposes. (logs are in logs directory)
 
 ## Docker Configuration
 Utilizes Docker Compose for managing containerized services, ensuring seamless network setup for communication between server and clients.
