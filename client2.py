@@ -25,7 +25,10 @@ class TCPClient:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logging.info(f"Клиент {self.client_id}. Ошибка при отправке сообщения: {e}")
+                logging.info(
+                    f"Клиент {self.client_id}. "
+                    f"Ошибка при отправке сообщения: {e}"
+                )
                 break
 
     async def handle_response(self, reader):
@@ -35,9 +38,18 @@ class TCPClient:
             if response:
                 response_message = response.decode().strip()
                 if "keepalive" in response_message:
-                    log_message = f"{datetime.datetime.now().strftime('%Y-%m-%d')};{response_time.strftime('%H:%M:%S.%f')};(keepalive)"
+                    log_message = (
+                        f"{datetime.datetime.now().strftime('%Y-%m-%d')};"
+                        f"{response_time.strftime('%H:%M:%S.%f')};"
+                        f"(keepalive)"
+                    )
                 else:
-                    log_message = f"{self.send_time.strftime('%Y-%m-%d;%H:%M:%S.%f')};{self.message.rstrip()};{response_time.strftime('%H:%M:%S.%f')};{response_message}"
+                    log_message = (
+                        f"{self.send_time.strftime('%Y-%m-%d;%H:%M:%S.%f')};"
+                        f"{self.message.rstrip()};"
+                        f"{response_time.strftime('%H:%M:%S.%f')};"
+                        f"{response_message}"
+                    )
             else:
                 break
 
@@ -47,7 +59,10 @@ class TCPClient:
     async def run(self):
         writer = None
         try:
-            reader, writer = await asyncio.open_connection(self.host, self.port)
+            reader, writer = await asyncio.open_connection(
+                self.host,
+                self.port
+            )
             send_ping_task = asyncio.create_task(self.send_ping(writer))
             receive_task = asyncio.create_task(self.handle_response(reader))
             await asyncio.sleep(300)
@@ -63,7 +78,10 @@ class TCPClient:
                 try:
                     await writer.wait_closed()
                 except Exception as e:
-                    logging.info(f"Клиент {self.client_id}. Ошибка при закрытии соединения: {e}")
+                    logging.info(
+                        f"Клиент {self.client_id}. "
+                        f"Ошибка при закрытии соединения: {e}"
+                    )
             logging.info(f"Клиент {self.client_id} завершил работу.")
 
 
@@ -78,5 +96,9 @@ if __name__ == "__main__":
     file_logger.addHandler(file_handler)
     file_logger.propagate = False
 
-    client = TCPClient('server', 8888, 2)
+    client = TCPClient(
+        'server',
+        8888,
+        2
+    )
     asyncio.run(client.run())

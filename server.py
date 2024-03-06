@@ -22,15 +22,27 @@ class TCPServer:
                 if data:
                     message = data.decode()
                     if random.random() < 0.1:
-                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message.rstrip()};(проигнорировано)"
+                        log_message = (
+                            f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};"
+                            f"{message.rstrip()};(проигнорировано)"
+                        )
                     else:
                         await asyncio.sleep(random.randint(100, 1000) / 1000)
-                        response = f"[{self.message_counter}]/{message.split()[0]} PONG ({client_id})\n"
+                        response = (
+                            f"[{self.message_counter}]/"
+                            f"{message.split()[0]} "
+                            f"PONG ({client_id})\n"
+                        )
                         response_time = datetime.datetime.now()
                         writer.write(response.encode())
                         await writer.drain()
                         self.message_counter += 1
-                        log_message = f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};{message.rstrip()};{response_time.strftime('%H:%M:%S.%f')[:-3]};{response.rstrip()}"
+                        log_message = (
+                            f"{request_time.strftime('%Y-%m-%d;%H:%M:%S.%f')[:-3]};"
+                            f"{message.rstrip()};"
+                            f"{response_time.strftime('%H:%M:%S.%f')[:-3]};"
+                            f"{response.rstrip()}"
+                        )
                     logging.info(log_message)
                     file_logger.info(log_message)
                 else:
@@ -38,7 +50,7 @@ class TCPServer:
         except Exception as e:
             logging.error(f"Ошибка при обработке клиента {client_id}: {e}")
         finally:
-            if client_id in self.clients:  # Проверяем наличие client_id перед удалением
+            if client_id in self.clients:
                 del self.clients[client_id]
                 logging.info(f"Соединение с клиентом {client_id} закрыто.")
             writer.close()
@@ -57,7 +69,11 @@ class TCPServer:
             self.message_counter += 1
 
     async def run(self):
-        server = await asyncio.start_server(self.handle_client, self.host, self.port)
+        server = await asyncio.start_server(
+            self.handle_client,
+            self.host,
+            self.port
+        )
         server_task = asyncio.create_task(server.serve_forever())
         keepalive_task = asyncio.create_task(self.send_keepalive())
         try:
@@ -89,5 +105,8 @@ if __name__ == "__main__":
     file_logger.addHandler(file_handler)
     file_logger.propagate = False
 
-    server = TCPServer('0.0.0.0', 8888)
+    server = TCPServer(
+        '0.0.0.0',
+        8888
+    )
     asyncio.run(server.run())
